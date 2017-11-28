@@ -1,7 +1,4 @@
 #include <RcppArmadillo.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -30,7 +27,6 @@ void alsUpdateX(arma::mat & X, const arma::mat & Theta, const arma::mat & Y, con
     arma::mat X_grad = delta * Theta + lambda * X;
     X += X_grad * alpha;
   } else {
-#pragma omp parallel for
     for (int i = 0; i < Y.n_rows; i++) {
       arma::mat delta = calculate_delta(X.row(i), Theta, Y.row(i), R.row(i));
       
@@ -52,7 +48,6 @@ void alsUpdateTheta(const arma::mat & X, arma::mat & Theta, const arma::mat & Y,
     arma::mat Theta_grad = trans(delta) * X + lambda * Theta;
     Theta += Theta_grad * alpha; // update rule
   } else {
-#pragma omp parallel for
     for (int i = 0; i < Y.n_cols; i++) {
       arma::mat delta = calculate_delta(X, Theta.row(i), Y.col(i), R.col(i));
       

@@ -1,7 +1,4 @@
 #include <RcppArmadillo.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 using namespace Rcpp;
 using namespace arma;
 
@@ -28,7 +25,6 @@ void updateImplicitX(arma::mat & X, const arma::mat & Y, const arma::mat & P, co
   arma::mat fact_eye = eye(num_prods, num_prods);
   arma::mat lambda_eye = lambda * eye(num_factors, num_factors);
 
-#pragma omp parallel for num_threads(cores)
   for (int u = 0; u < C.n_rows; u++) {
     arma::mat Cu = diagmat(C.row(u));
     arma::mat YTCuIY = Y.t() * (Cu) * Y;
@@ -53,7 +49,6 @@ void updateImplicitY(const arma::mat & X, arma::mat & Y, const arma::mat & P, co
   arma::mat fact_eye = eye(num_users, num_users);
   arma::mat lambda_eye = lambda * eye(num_factors, num_factors);
 
-#pragma omp parallel for num_threads(cores)
   for (int i = 0; i < C.n_cols; i++) {
     arma::mat Ci = diagmat(C.col(i));
     arma::mat YTCiIY = X.t() * (Ci) * X;
@@ -69,7 +64,6 @@ void updateImplicitY(const arma::mat & X, arma::mat & Y, const arma::mat & P, co
 double implicitCost(const arma::mat & X, const arma::mat & Y, const arma::mat & P, const arma::mat & C, double lambda,
   int cores) {
   double delta = 0.0;
-#pragma omp parallel for num_threads(cores)
   for (int u = 0; u < C.n_rows; u++) {
     delta += accu(dot(C.row(u), square(P.row(u) - X.row(u) * Y.t())));
   }
